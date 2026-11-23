@@ -9,6 +9,12 @@
 
 ---
 
+## 🎯 Live Project View
+
+      https://aero-shield-ai.vercel.app/
+      
+---
+
 ## 📌 Executive Summary & Root Challenge
 
 During winter, major urban regions (the Indo-Gangetic Plain including Delhi-NCR and Lahore, the North China Plain including Beijing, the Po Valley in Northern Italy, the Wasatch Front in Salt Lake City, and London) suffer from catastrophic **severe winter smog episodes** (AQI 300–600+).

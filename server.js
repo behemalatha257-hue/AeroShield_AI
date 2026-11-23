@@ -30,10 +30,15 @@ app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 // Input Sanitization Middleware
 app.use(sanitizeMiddleware);
 
-// Serve Frontend Static Files
+// Serve Frontend Static Files with Instant Revalidation
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,
-  etag: true
+  maxAge: 0,
+  etag: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    }
+  }
 }));
 
 // API Routes

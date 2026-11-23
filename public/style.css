@@ -1549,6 +1549,52 @@ canvas {
   color: var(--blue);
 }
 
+.speed-step-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.speed-step-btn:hover {
+  background: rgba(0, 229, 255, 0.18);
+  color: #ffffff;
+  border-color: var(--blue);
+}
+
+.speed-step-btn.active {
+  background: var(--blue);
+  color: #04080e;
+  border-color: var(--blue);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  font-weight: 800;
+}
+
+#hud-fan-rpm-pill {
+  transition: all 0.3s ease;
+}
+
+#hud-fan-rpm-pill.turbo-active {
+  background: rgba(0, 255, 136, 0.22);
+  border-color: var(--green);
+  color: #a7f3d0;
+  box-shadow: 0 0 14px rgba(0, 255, 136, 0.35);
+}
+
+.canvas-mouse-hint {
+  animation: pulse-subtle 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.85; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); box-shadow: 0 0 14px rgba(0, 255, 136, 0.35); }
+}
+
 /* CADR Calculator Grid */
 .cadr-calculator-grid {
   display: grid;

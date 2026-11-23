@@ -140,6 +140,8 @@
     hudOutdoorPM25: document.getElementById('hud-outdoor-pm25'),
     hudIndoorPM25: document.getElementById('hud-indoor-pm25'),
     hudEfficiency: document.getElementById('hud-efficiency'),
+    hudFanRpm: document.getElementById('hud-fan-rpm'),
+    hudFanRpmPill: document.getElementById('hud-fan-rpm-pill'),
     btnChamberToggleFilter: document.getElementById('btn-chamber-toggle-filter'),
     btnChamberToggleWindow: document.getElementById('btn-chamber-toggle-window'),
     btnChamberSpikeCooking: document.getElementById('btn-chamber-spike-cooking'),
@@ -1071,6 +1073,16 @@
     const filterH = 80;
     let fanAngle = 0;
 
+    // Mouse velocity and interactive fan speed controls
+    let mouseX = -999;
+    let mouseY = -999;
+    let lastMouseX = -999;
+    let lastMouseY = -999;
+    let mouseSpeedImpulse = 0;
+    let isMouseInCanvas = false;
+    let baseFanSpeed = 1.2; // 0.8: Low, 1.2: Med, 2.2: Turbo
+    let effectiveFanMultiplier = 1.2;
+
     let particles = [];
     let cleanParticles = [];
     let kitchenDraftActive = false;
@@ -1103,6 +1115,55 @@
         source: 'smog'
       });
     }
+
+    // Mouse Tracking Event Listeners
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const curX = (e.clientX - rect.left) * scaleX;
+      const curY = (e.clientY - rect.top) * scaleY;
+
+      if (lastMouseX !== -999 && lastMouseY !== -999) {
+        const delta = Math.hypot(curX - lastMouseX, curY - lastMouseY);
+        // Instant acceleration impulse directly proportional to mouse movement speed
+        mouseSpeedImpulse = Math.min(3.8, mouseSpeedImpulse + delta * 0.06);
+      }
+
+      mouseX = curX;
+      mouseY = curY;
+      lastMouseX = curX;
+      lastMouseY = curY;
+      isMouseInCanvas = true;
+    });
+
+    canvas.addEventListener('mouseenter', () => {
+      isMouseInCanvas = true;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      isMouseInCanvas = false;
+      mouseX = -999;
+      mouseY = -999;
+      lastMouseX = -999;
+      lastMouseY = -999;
+    });
+
+    // CADR Speed Stepper Buttons (Low / Med / Turbo)
+    const speedBtns = document.querySelectorAll('.speed-step-btn');
+    speedBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        speedBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const spd = parseInt(btn.getAttribute('data-speed') || '2', 10);
+        if (spd === 1) baseFanSpeed = 0.8;
+        else if (spd === 2) baseFanSpeed = 1.2;
+        else if (spd === 3) {
+          baseFanSpeed = 2.2;
+          mouseSpeedImpulse = Math.max(mouseSpeedImpulse, 1.5);
+        }
+      });
+    });
 
     // Buttons wireup
     if (el.btnChamberToggleFilter) {
@@ -1163,6 +1224,15 @@
 
     function animate() {
       ctx.clearRect(0, 0, W, H);
+
+      // Smoothly decay mouse impulse
+      mouseSpeedImpulse *= 0.94;
+      if (mouseSpeedImpulse < 0.005) mouseSpeedImpulse = 0;
+
+      // Calculate dynamic fan multiplier combining base speed + mouse velocity impulse
+      effectiveFanMultiplier = state.chamber.filterActive 
+        ? baseFanSpeed * (1 + mouseSpeedImpulse * 1.7)
+        : 0;
 
       // 1. Backgrounds
       // Outdoor Atmosphere (Deep Smog Atmosphere)
@@ -1231,6 +1301,9 @@
       }
 
       // 3. Corsi-Rosenthal Box Unit Visual
+      const centerX = filterX + filterW / 2;
+      const centerY = filterY + filterH / 2;
+
       ctx.save();
       // Cube base
       ctx.fillStyle = '#0f172a';
@@ -1250,8 +1323,6 @@
       }
 
       // 15-inch Cardboard Shroud Ring
-      const centerX = filterX + filterW / 2;
-      const centerY = filterY + filterH / 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, 28, 0, Math.PI * 2);
       ctx.fillStyle = '#1e293b';
@@ -1260,12 +1331,21 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Spinning Fan Blades
+      // Spinning Fan Blades - speed scales dynamically with effectiveFanMultiplier!
       if (state.chamber.filterActive) {
-        fanAngle += 0.22;
+        fanAngle += 0.16 * effectiveFanMultiplier;
       }
       ctx.translate(centerX, centerY);
       ctx.rotate(fanAngle);
+
+      // Motion blur trails when fan is spinning fast
+      if (effectiveFanMultiplier > 2.0 && state.chamber.filterActive) {
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.15)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 24, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       ctx.strokeStyle = state.chamber.filterActive ? '#00ff88' : '#94a3b8';
       ctx.lineWidth = 3;
       for (let b = 0; b < 4; b++) {
@@ -1277,28 +1357,65 @@
       }
       ctx.restore();
 
-      // Suction Vortex Glow
+      // Dynamic Suction Vortex Radius & Glow
+      const dynamicSuctionRadius = 240 + Math.min(180, mouseSpeedImpulse * 75 + (baseFanSpeed - 1) * 50);
+
       if (state.chamber.filterActive) {
-        const radGrad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, 220);
-        radGrad.addColorStop(0, 'rgba(0, 255, 136, 0.16)');
-        radGrad.addColorStop(0.5, 'rgba(0, 229, 255, 0.05)');
+        const radGrad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, dynamicSuctionRadius);
+        const glowOpacity = Math.min(0.32, 0.14 + (effectiveFanMultiplier - 1) * 0.08);
+        radGrad.addColorStop(0, `rgba(0, 255, 136, ${glowOpacity})`);
+        radGrad.addColorStop(0.5, 'rgba(0, 229, 255, 0.08)');
         radGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = radGrad;
         ctx.beginPath();
-        ctx.arc(centerX, centerY, 220, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, dynamicSuctionRadius, 0, Math.PI * 2);
         ctx.fill();
+
+        // Pulsing inward suction streamline rings when mouse speeds up fan
+        if (mouseSpeedImpulse > 0.2) {
+          ctx.strokeStyle = 'rgba(0, 229, 255, 0.25)';
+          ctx.setLineDash([4, 6]);
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, 120 + (Date.now() % 1000) * 0.08, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
 
         ctx.fillStyle = '#00ff88';
         ctx.font = 'bold 11px sans-serif';
-        ctx.fillText('DIY Corsi-Rosenthal Box (520 CFM CADR)', filterX - 60, filterY - 12);
+        const cadrText = effectiveFanMultiplier > 2.2 ? 'DIY Corsi-Rosenthal Box (⚡ Turbo 580+ CFM)' : 'DIY Corsi-Rosenthal Box (520 CFM CADR)';
+        ctx.fillText(cadrText, filterX - 65, filterY - 12);
       } else {
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 11px sans-serif';
         ctx.fillText('Corsi-Rosenthal Box (OFF)', filterX - 25, filterY - 12);
       }
 
+      // Interactive mouse guidance sweep visual
+      if (isMouseInCanvas && mouseX > wallX + 25) {
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, 16 + mouseSpeedImpulse * 8, 0, Math.PI * 2);
+        ctx.strokeStyle = mouseSpeedImpulse > 0.3 ? 'rgba(0, 255, 136, 0.6)' : 'rgba(0, 229, 255, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        if (mouseSpeedImpulse > 0.2 && state.chamber.filterActive) {
+          // Flow vector line towards filter
+          ctx.beginPath();
+          ctx.moveTo(mouseX, mouseY);
+          ctx.lineTo(centerX, centerY);
+          ctx.strokeStyle = 'rgba(0, 255, 136, 0.2)';
+          ctx.setLineDash([3, 5]);
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
       // 4. Particle Generation & Maintenance
-      if (Date.now() - lastSpawn > 250) {
+      const spawnInterval = effectiveFanMultiplier > 2.0 ? 160 : 250;
+      if (Date.now() - lastSpawn > spawnInterval) {
         lastSpawn = Date.now();
         // Keep outdoor particle density steady
         const outdoorCount = particles.filter(p => !p.isIndoor).length;
@@ -1315,13 +1432,13 @@
           });
         }
 
-        // Spawn upward filtered clean particle if filter is active
+        // Spawn upward filtered clean particle if filter is active (rate scales with fan speed)
         if (state.chamber.filterActive) {
           cleanParticles.push({
             x: centerX + (Math.random() - 0.5) * 35,
             y: filterY - 5,
             vx: (Math.random() - 0.5) * 0.8,
-            vy: -(Math.random() * 1.8 + 1.0),
+            vy: -(Math.random() * 1.8 + 1.0) * (0.8 + effectiveFanMultiplier * 0.3),
             radius: Math.random() * 2 + 1,
             alpha: 1.0
           });
@@ -1330,6 +1447,7 @@
 
       // 5. Update and Draw Particles
       let activeIndoorCount = 0;
+      const absorptionRadius = 42 + Math.min(24, mouseSpeedImpulse * 9 + (baseFanSpeed - 1) * 8);
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
@@ -1346,20 +1464,36 @@
           }
         }
 
-        // Filter suction vortex effect on indoor particles
+        // Interactive mouse sweep: moving mouse pushes nearby particles towards Corsi-Rosenthal unit
+        if (isMouseInCanvas && p.isIndoor && mouseX > wallX + 25) {
+          const mdx = mouseX - p.x;
+          const mdy = mouseY - p.y;
+          const mdist = Math.hypot(mdx, mdy);
+          if (mdist < 140 && mouseSpeedImpulse > 0.05) {
+            const toFilterX = centerX - p.x;
+            const toFilterY = centerY - p.y;
+            const toFilterDist = Math.hypot(toFilterX, toFilterY) || 1;
+            const sweepForce = (1 - mdist / 140) * (0.35 + mouseSpeedImpulse * 0.45);
+            p.vx += (toFilterX / toFilterDist) * sweepForce;
+            p.vy += (toFilterY / toFilterDist) * sweepForce;
+          }
+        }
+
+        // Filter suction vortex effect on indoor particles - accelerated by effectiveFanMultiplier
         if (state.chamber.filterActive && p.isIndoor) {
           const dx = centerX - p.x;
           const dy = centerY - p.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const dist = Math.hypot(dx, dy);
 
-          if (dist < 260) {
-            const pull = Math.min(2.5, 30 / (dist + 10));
-            p.vx += (dx / dist) * pull * 0.18;
-            p.vy += (dy / dist) * pull * 0.18;
+          if (dist < dynamicSuctionRadius) {
+            // Suction pull force strengthens significantly with mouse-driven fan speed
+            const pull = Math.min(6.5, (38 / (dist + 6)) * effectiveFanMultiplier);
+            p.vx += (dx / dist) * pull * 0.22;
+            p.vy += (dy / dist) * pull * 0.22;
           }
 
-          // Trapped in MERV-13 media
-          if (dist < 42) {
+          // Rapid absorption into MERV-13 media
+          if (dist < absorptionRadius) {
             particles.splice(i, 1);
             continue;
           }
@@ -1421,21 +1555,40 @@
         ctx.fill();
       }
 
-      // 6. HUD updates (throttled every 300ms)
-      if (Date.now() - lastHudUpdate > 300) {
+      // 6. HUD updates (throttled every 250ms)
+      if (Date.now() - lastHudUpdate > 250) {
         lastHudUpdate = Date.now();
         const outdoor = state.currentPM25 || 295;
         let estimatedIndoor = state.chamber.filterActive 
-          ? Math.max(4.2, Math.min(32, Math.round(activeIndoorCount * 0.85)))
+          ? Math.max(3.5, Math.min(32, Math.round(activeIndoorCount * 0.8)))
           : Math.max(45, Math.round(activeIndoorCount * 2.2));
 
         if (!state.chamber.windowSealed) estimatedIndoor += 25;
 
-        const eff = Math.max(0, Math.min(98.8, ((1 - estimatedIndoor / outdoor) * 100))).toFixed(1);
+        const eff = Math.max(0, Math.min(99.2, ((1 - estimatedIndoor / outdoor) * 100))).toFixed(1);
 
         if (el.hudOutdoorPM25) el.hudOutdoorPM25.textContent = `${outdoor} µg/m³`;
         if (el.hudIndoorPM25) el.hudIndoorPM25.textContent = `${estimatedIndoor} µg/m³`;
         if (el.hudEfficiency) el.hudEfficiency.textContent = `${eff}%`;
+
+        // Real-time Fan RPM HUD update
+        if (el.hudFanRpm) {
+          if (!state.chamber.filterActive) {
+            el.hudFanRpm.textContent = '0 RPM (OFF)';
+          } else {
+            const calculatedRpm = Math.round(effectiveFanMultiplier * 1160);
+            let speedTier = 'Med';
+            if (effectiveFanMultiplier >= 2.8) speedTier = 'Turbo Vortex ⚡⚡';
+            else if (effectiveFanMultiplier >= 2.0) speedTier = 'Turbo ⚡';
+            else if (effectiveFanMultiplier >= 1.4) speedTier = 'High';
+            else if (effectiveFanMultiplier < 0.95) speedTier = 'Low';
+            el.hudFanRpm.textContent = `${calculatedRpm.toLocaleString()} RPM (${speedTier})`;
+          }
+        }
+
+        if (el.hudFanRpmPill) {
+          el.hudFanRpmPill.classList.toggle('turbo-active', effectiveFanMultiplier >= 2.0);
+        }
       }
 
       requestAnimationFrame(animate);

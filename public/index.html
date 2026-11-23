@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroShield AI - Autonomous Winter Smog & Community Clean-Air Assistant</title>
+  <meta name="description" content="GenAI-powered assistant helping families and communities navigate severe winter smog with low-emission routines, DIY indoor air quality hacks, thermal inversion forecasting, task automation, and direct impact calculation.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-cyber" id="app-body">
+  <!-- Screen Reader Announcements -->
+  <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Global Header -->
+  <header class="header" role="banner">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">AeroShield <span class="brand-badge">AI 2.0</span></h1>
+          <p class="brand-subtitle">Autonomous Winter Smog & Community Air Resilience</p>
+        </div>
+      </div>
+
+      <!-- Live Location & Hotspot Selector -->
+      <div class="hotspot-selector-wrapper">
+        <label for="city-select" class="hotspot-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Smog Hotspot:
+        </label>
+        <select id="city-select" class="city-dropdown" aria-label="Select Urban Smog Hotspot Location">
+          <option value="DELHI" selected>Delhi-NCR, India</option>
+          <option value="BEIJING">Beijing, China</option>
+          <option value="LAHORE">Lahore, Pakistan</option>
+          <option value="MILAN">Milan (Po Valley), Italy</option>
+          <option value="SALT_LAKE_CITY">Salt Lake City, USA</option>
+          <option value="LONDON">London, UK</option>
+        </select>
+      </div>
+
+      <!-- Accessibility & Audio Toolbar -->
+      <div class="accessibility-toolbar" role="toolbar" aria-label="Audio and display settings">
+        <button id="btn-audio-brief" class="tool-btn" title="Listen to Voice Smog Briefing (Text to Speech)" aria-label="Listen to Voice Smog Briefing">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span class="btn-text">Voice Brief</span>
+        </button>
+
+        <div class="font-resizer" role="group" aria-label="Text size adjustment">
+          <button id="btn-font-dec" class="font-btn" aria-label="Decrease text size" title="Decrease font size">A-</button>
+          <button id="btn-font-reset" class="font-btn" aria-label="Reset text size" title="Reset font size">A</button>
+          <button id="btn-font-inc" class="font-btn" aria-label="Increase text size" title="Increase font size">A+</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Real-time Atmospheric Alert Banner -->
+  <div id="smog-alert-banner" class="alert-banner" role="alert" aria-live="assertive">
+    <div class="alert-content">
+      <span class="alert-icon" aria-hidden="true">🚨</span>
+      <span id="alert-banner-text">Loading local planetary boundary layer & thermal inversion dynamics...</span>
+    </div>
+    <div class="golden-window-pill" id="golden-window-pill">
+      <span class="pill-dot"></span>
+      <span id="golden-window-time">Golden Window: Calculating...</span>
+    </div>
+  </div>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="nav-tabs-wrapper" role="navigation" aria-label="Main Application Modules">
+    <div class="nav-tabs" role="tablist">
+      <button class="nav-tab active" role="tab" aria-selected="true" id="tab-radar" aria-controls="pane-radar" data-pane="pane-radar">
+        <span class="tab-icon">📡</span> Radar & Inversion
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-twin" aria-controls="pane-twin" data-pane="pane-twin">
+        <span class="tab-icon">🏡</span> Indoor Digital Twin
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-routine" aria-controls="pane-routine" data-pane="pane-routine">
+        <span class="tab-icon">📅</span> Family Routine
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-hacks" aria-controls="pane-hacks" data-pane="pane-hacks">
+        <span class="tab-icon">💡</span> DIY IAQ Hacks
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-community" aria-controls="pane-community" data-pane="pane-community">
+        <span class="tab-icon">🤝</span> Community Grid
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-impact" aria-controls="pane-impact" data-pane="pane-impact">
+        <span class="tab-icon">📊</span> Direct Impact
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-copilot" aria-controls="pane-copilot" data-pane="pane-copilot">
+        <span class="tab-icon">🤖</span> GenAI Copilot
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-task-automation" aria-controls="pane-task-automation" data-pane="pane-task-automation">
+        <span class="tab-icon">⚡</span> AI Task & Event Automation
+      </button>
+      <button class="nav-tab" role="tab" aria-selected="false" id="tab-automation" aria-controls="pane-automation" data-pane="pane-automation">
+        <span class="tab-icon">🔌</span> IoT Smart Home
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Application Body -->
+  <main class="main-content" role="main">
+
+    <!-- 1. MODULE: RADAR & INVERSION DYNAMICS -->
+    <section id="pane-radar" class="tab-pane active" role="tabpanel" aria-labelledby="tab-radar">
+      <div class="grid-2col">
+        <!-- Live AQI Hero Card -->
+        <div class="card hero-aqi-card">
+          <div class="card-header">
+            <h2 class="card-title">Live Atmospheric Monitoring</h2>
+            <span class="badge badge-primary" id="aqi-category-badge">Analyzing</span>
+          </div>
+
+          <div class="aqi-display-row">
+            <div class="aqi-circle" id="aqi-circle">
+              <span class="aqi-number" id="aqi-val">--</span>
+              <span class="aqi-label">US AQI</span>
+            </div>
+            <div class="pollutant-meters">
+              <div class="meter-item">
+                <div class="meter-header">
+                  <span class="meter-name">PM2.5 (Fine Respirable Particles)</span>
+                  <span class="meter-val" id="pm25-val">-- µg/m³</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="pm25-fill" style="width: 0%"></div></div>
+                <span class="meter-sub" id="pm25-ratio">-- x WHO 24h limit</span>
+              </div>
+
+              <div class="meter-item">
+                <div class="meter-header">
+                  <span class="meter-name">PM10 (Inhalable Dust)</span>
+                  <span class="meter-val" id="pm10-val">-- µg/m³</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="pm10-fill" style="width: 0%"></div></div>
+              </div>
+
+              <div class="meter-item">
+                <div class="meter-header">
+                  <span class="meter-name">NO₂ & Combustion Gases</span>
+                  <span class="meter-val" id="no2-val">-- µg/m³</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="no2-fill" style="width: 0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="smog-drivers-box">
+            <h4>Primary Smog Drivers in Region:</h4>
+            <ul id="smog-causes-list" class="causes-list">
+              <li>Loading drivers...</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Thermal Inversion & Boundary Layer Science Card -->
+        <div class="card inversion-card">
+          <div class="card-header">
+            <h2 class="card-title">Winter Thermal Inversion & Boundary Layer</h2>
+            <span class="badge badge-gold" id="pbl-status-badge">Nocturnal Trapping Active</span>
+          </div>
+
+          <p class="text-secondary">
+            In winter, clear night skies cause rapid radiative ground cooling. A warm atmospheric layer acts as a lid, trapping toxic vehicular and heating emissions near the surface until afternoon solar convection breaks the trap.
+          </p>
+
+          <div class="golden-window-spotlight">
+            <div class="spotlight-header">
+              <span class="spotlight-icon">☀️</span>
+              <div>
+                <strong>Safe Natural Ventilation Golden Window:</strong>
+                <div class="spotlight-time" id="spotlight-window-time">13:00 - 15:30</div>
+              </div>
+            </div>
+            <p class="spotlight-desc" id="spotlight-window-desc">
+              During these hours, vertical mixing height expands to >1000m, dispersing surface smog by up to 50%. This is the only safe period to open opposing windows.
+            </p>
+          </div>
+
+          <!-- Diurnal Inversion Canvas -->
+          <div class="chart-wrapper">
+            <h4 class="chart-caption">24-Hour Boundary Layer Height (m) & Safe Ventilation Window</h4>
+            <canvas id="inversionChart" width="500" height="200" aria-label="Hourly boundary layer height curve showing convective daytime mixing"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MODULE: INDOOR DIGITAL TWIN -->
+    <section id="pane-twin" class="tab-pane" role="tabpanel" aria-labelledby="tab-twin">
+      <div class="grid-2col">
+        <!-- Interactive Controls -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Digital Twin Simulator Controls</h2>
+            <span class="badge badge-purple">Scientific Mass Balance Engine</span>
+          </div>
+          <p class="text-secondary">
+            Simulates dynamic particulate concentration based on room volume, air exchange rate (ACH), cleaner CADR, and indoor emission spikes.
+          </p>
+
+          <form id="twin-form" class="sim-form">
+            <div class="form-group">
+              <label for="room-volume" class="form-label">Room Size (Volume in m³):</label>
+              <div class="range-row">
+                <input type="range" id="room-volume" min="20" max="150" step="5" value="45" class="slider">
+                <span id="room-volume-display" class="slider-val">45 m³ (~180 sq ft)</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="filter-select" class="form-label">Air Filtration Device:</label>
+              <select id="filter-select" class="form-select">
+                <option value="CORSI_ROSENTHAL_20INCH" selected>DIY Corsi-Rosenthal Box (CADR 850 m³/h / 500 CFM)</option>
+                <option value="COMMERCIAL_HEPA_MEDIUM">Commercial Medium HEPA (CADR 340 m³/h / 200 CFM)</option>
+                <option value="COMMERCIAL_HEPA_SMALL">Commercial Compact HEPA (CADR 170 m³/h / 100 CFM)</option>
+                <option value="CORSI_ROSENTHAL_MINI">DIY Mini PC Fan Purifier (CADR 425 m³/h / 250 CFM)</option>
+                <option value="NONE">No Air Cleaner (Natural Deposition Only)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="window-status" class="form-label">Window Ventilation Mode:</label>
+              <select id="window-status" class="form-select">
+                <option value="scheduled" selected>AeroShield Smart Scheduled (Sealed at night, Golden Window open)</option>
+                <option value="closed">Permanently Closed (Draft-sealed, 0.35 ACH)</option>
+                <option value="cracked">Slightly Cracked (0.85 ACH)</option>
+                <option value="open">Fully Open (2.20 ACH - Heavy Smog Infiltration)</option>
+              </select>
+            </div>
+
+            <div class="form-row-checkboxes">
+              <label class="checkbox-label">
+                <input type="checkbox" id="check-cooking" checked>
+                <span>Include Evening Cooking Event (Frying spike)</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="check-mopping" checked>
+                <span>Microfiber Wet-Mopping (Anti-Resuspension)</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="check-humidity" checked>
+                <span>Humidity Buffer (40-50% RH Particulate Clumping)</span>
+              </label>
+            </div>
+
+            <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Recalculate Digital Twin
+            </button>
+          </form>
+        </div>
+
+        <!-- Simulation Results -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Indoor Air Quality Simulation</h2>
+            <span class="badge badge-success" id="twin-who-badge">Within WHO Target</span>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Indoor Avg PM2.5</span>
+              <span class="metric-value color-green" id="sim-indoor-avg">18 µg/m³</span>
+              <span class="metric-sub">vs <span id="sim-baseline-avg">168</span> unshielded</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">PM2.5 Exposure Reduction</span>
+              <span class="metric-value color-purple" id="sim-reduction-pct">89%</span>
+              <span class="metric-sub">Particulate burden cut</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Time to Reach Clean Air</span>
+              <span class="metric-value color-blue" id="sim-time-clean">28 mins</span>
+              <span class="metric-sub">CADR pull-down speed</span>
+            </div>
+          </div>
+
+          <!-- Indoor vs Outdoor 24h Timeline Chart -->
+          <div class="chart-wrapper">
+            <h4 class="chart-caption">24-Hour Comparison: Outdoor vs Shielded Indoor PM2.5 (µg/m³)</h4>
+            <canvas id="twinChart" width="500" height="210" aria-label="Hourly comparison graph of indoor vs outdoor PM2.5 levels"></canvas>
+          </div>
+        </div>
+
+        <!-- Real-Time AeroChamber Particle Dynamics Canvas -->
+        <div class="card full-width-card" style="grid-column: 1 / -1; margin-top: 1.25rem;">
+          <div class="card-header" style="flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h2 class="card-title">AeroChamber™ Real-Time Aerosol Particle Dynamics Simulator</h2>
+              <p class="text-secondary" style="margin-bottom: 0;">Interactive 2D physics engine visualizing boundary layer smog infiltration, fan shroud suction vortex, and Corsi-Rosenthal filter elimination in real time.</p>
+            </div>
+            <div class="chamber-status-hud" id="chamber-status-hud">
+              <span class="hud-pill hud-danger">Outdoor PM2.5: <strong id="hud-outdoor-pm25">295 µg/m³</strong></span>
+              <span class="hud-pill hud-success">Indoor PM2.5: <strong id="hud-indoor-pm25">6.8 µg/m³</strong></span>
+              <span class="hud-pill hud-info">Filtration Efficiency: <strong id="hud-efficiency">97.7%</strong></span>
+            </div>
+          </div>
+
+          <div class="chamber-canvas-container" style="position: relative; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 255, 136, 0.3); background: #04080a;">
+            <canvas id="chamberCanvas" width="1000" height="360" style="display: block; width: 100%; height: auto; max-height: 380px;" aria-label="Interactive particle dynamics canvas showing outdoor smog infiltration and indoor Corsi-Rosenthal air filtration"></canvas>
+          </div>
+
+          <div class="chamber-controls-row" style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; justify-content: space-between;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" id="btn-chamber-toggle-filter" class="btn btn-primary">
+                🌀 Corsi-Rosenthal Box: <strong>ON</strong>
+              </button>
+              <button type="button" id="btn-chamber-toggle-window" class="btn btn-secondary">
+                🚪 Window Gap Infiltration: <strong>SEALED</strong>
+              </button>
+              <button type="button" id="btn-chamber-spike-cooking" class="btn btn-secondary" title="Simulate particulate explosion from high-heat frying">
+                🍳 Simulate Cooking Burst
+              </button>
+              <button type="button" id="btn-chamber-kitchen-draft" class="btn btn-secondary" title="Activate negative pressure draft to vent kitchen smoke">
+                💨 Kitchen Negative Pressure
+              </button>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-secondary);">
+              <em>Physics Engine:</em> Brownian particle diffusion + Navier-Stokes fan shroud suction vortex
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MODULE: FAMILY ROUTINE OPTIMIZER -->
+    <section id="pane-routine" class="tab-pane" role="tabpanel" aria-labelledby="tab-routine">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Personalized Family Routine & Vulnerability Profiler</h2>
+          <span class="badge badge-primary">Tailored Micro-Routines</span>
+        </div>
+        <p class="text-secondary">
+          Configure your family profile to generate an hour-by-hour low-emission schedule synchronized with atmospheric mixing.
+        </p>
+
+        <!-- Family Profile Questionnaire -->
+        <div class="profile-builder-grid">
+          <div class="profile-box">
+            <h4>1. Household Vulnerability:</h4>
+            <div class="chips-group" id="household-chips">
+              <button type="button" class="chip active" data-val="adult">Healthy Adults</button>
+              <button type="button" class="chip active" data-val="child_infant">Infant / Toddler (&lt;3 yrs)</button>
+              <button type="button" class="chip active" data-val="elderly_asthma">Elderly / Asthmatic</button>
+              <button type="button" class="chip" data-val="pregnant">Pregnant Mother</button>
+              <button type="button" class="chip" data-val="pet">Household Pets</button>
+            </div>
+          </div>
+
+          <div class="profile-box">
+            <h4>2. Current Commute Mode:</h4>
+            <select id="commute-mode-select" class="form-select">
+              <option value="car_solo" selected>Solo Gasoline / Diesel Car</option>
+              <option value="carpool">Carpool / Ride-share</option>
+              <option value="metro_transit">Metro / Electric Bus</option>
+              <option value="twowheeler">Motorcycle / Scooter</option>
+              <option value="remote">Work / Study from Home</option>
+            </select>
+          </div>
+
+          <div class="profile-box">
+            <h4>3. Current Home Heating:</h4>
+            <select id="heating-type-select" class="form-select">
+              <option value="biomass_wood" selected>Wood / Biomass Fireplace</option>
+              <option value="kerosene">Kerosene / Unvented Heater</option>
+              <option value="electric_heater">Electric Radiator</option>
+              <option value="heat_pump">Heat Pump (Split AC Inverter)</option>
+            </select>
+          </div>
+
+          <div class="profile-box">
+            <h4>4. Cooking Fuel:</h4>
+            <select id="cooking-type-select" class="form-select">
+              <option value="gas_lpg" selected>LPG / Piped Methane Gas</option>
+              <option value="induction">Electric Induction Cooktop</option>
+              <option value="biomass">Solid Biomass / Chulha</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" id="btn-generate-routine" class="btn btn-primary" style="margin-top: 1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Generate Tailored Routine
+        </button>
+
+        <!-- Hourly Schedule Display -->
+        <div class="schedule-timeline-wrapper" style="margin-top: 1.5rem;">
+          <h3 class="section-subtitle">Your Smog-Synchronized Daily Routine</h3>
+          <div id="schedule-timeline" class="timeline-container">
+            <div class="loading-state">Generating customized daily plan...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. MODULE: DIY IAQ HACK LAB -->
+    <section id="pane-hacks" class="tab-pane" role="tabpanel" aria-labelledby="tab-hacks">
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Peer-Reviewed IAQ Hacks Catalog</h2>
+            <span class="badge badge-success">Science-Backed</span>
+          </div>
+          <p class="text-secondary">
+            Engineered, ultra-affordable indoor air solutions designed to outperform commercial purifiers without exorbitant costs.
+          </p>
+
+          <div id="hacks-list" class="hacks-accordion">
+            <div class="loading-state">Loading blueprints and guides...</div>
+          </div>
+        </div>
+
+        <div class="card blueprint-card">
+          <div class="card-header">
+            <h2 class="card-title">Corsi-Rosenthal Box: The Physics Blueprint</h2>
+            <span class="badge badge-gold">520 CFM CADR</span>
+          </div>
+
+          <div class="cr-blueprint-diagram" aria-label="Diagram of Corsi Rosenthal 4-filter box with fan shroud">
+            <div class="cr-visual">
+              <div class="cr-fan-top">
+                <div class="shroud-circle"><span>15" Shroud (Airflow Booster)</span></div>
+                <div class="fan-blades-label">20" Box Fan (Blowing UP)</div>
+              </div>
+              <div class="cr-cube-body">
+                <div class="cr-side cr-side-left">MERV-13 Filter (Air In) ➔</div>
+                <div class="cr-center-core">Airtight Low-Resistance Clean Plenum</div>
+                <div class="cr-side cr-side-right">➔ MERV-13 Filter (Air In)</div>
+              </div>
+              <div class="cr-base">Solid Cardboard Airtight Base Plate</div>
+            </div>
+          </div>
+
+          <div class="economic-comparison-table">
+            <h4>Economics: DIY Box vs Commercial HEPA</h4>
+            <table class="data-table" aria-label="Cost comparison between DIY box and commercial purifiers">
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  <th scope="col">DIY Corsi-Rosenthal</th>
+                  <th scope="col">Commercial HEPA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Upfront Build Cost</td>
+                  <td class="color-green font-bold">$55</td>
+                  <td class="color-red">$380 - $550</td>
+                </tr>
+                <tr>
+                  <td>Clean Air Delivery (CADR)</td>
+                  <td class="color-green font-bold">520 CFM (883 m³/h)</td>
+                  <td>180 - 240 CFM</td>
+                </tr>
+                <tr>
+                  <td>Annual Filter Replacements</td>
+                  <td class="color-green font-bold">$40 / year</td>
+                  <td class="color-red">$130 / year</td>
+                </tr>
+                <tr>
+                  <td>3-Year Total Cost</td>
+                  <td class="color-green font-bold">$175</td>
+                  <td class="color-red">$770+</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Interactive CADR & Room Sizing Engineering Calculator -->
+        <div class="card full-width-card" style="grid-column: 1 / -1; margin-top: 1.25rem;">
+          <div class="card-header" style="flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h2 class="card-title">Interactive CADR & Room Sizing Engineering Calculator</h2>
+              <p class="text-secondary" style="margin-bottom: 0;">Calculate the exact Clean Air Delivery Rate (CADR in CFM & m³/h) required for your home to achieve CDC / ASHRAE clean air standards (5.0 ACH) during winter smog episodes.</p>
+            </div>
+            <span class="badge badge-success">ASHRAE 52.2 & CDC Standard</span>
+          </div>
+
+          <div class="cadr-calculator-grid">
+            <div class="calc-inputs-col">
+              <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
+                <div class="form-group">
+                  <label for="calc-room-length" class="form-label">Room Length (ft):</label>
+                  <input type="number" id="calc-room-length" value="16" min="6" max="60" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label for="calc-room-width" class="form-label">Room Width (ft):</label>
+                  <input type="number" id="calc-room-width" value="14" min="6" max="60" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label for="calc-room-height" class="form-label">Ceiling Height (ft):</label>
+                  <input type="number" id="calc-room-height" value="9" min="7" max="20" class="form-input">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 0.85rem;">
+                <label for="calc-target-ach" class="form-label">Target Clean Air Changes per Hour (ACH): <strong id="calc-ach-label" style="color: var(--green);">5.0 ACH (Smog Defense)</strong></label>
+                <input type="range" id="calc-target-ach" min="2" max="10" step="0.5" value="5" class="slider">
+                <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem;">2-3 ACH = Normal baseline | 5-6 ACH = Recommended for wildfire/severe winter smog</span>
+              </div>
+            </div>
+
+            <div class="calc-results-col">
+              <div class="calc-results-card">
+                <div class="calc-kpi-row">
+                  <div class="calc-kpi-item">
+                    <span class="calc-kpi-title">Room Volume</span>
+                    <span class="calc-kpi-val" id="res-room-vol">2,016 ft³</span>
+                    <span class="calc-kpi-sub" id="res-room-vol-m3">57.1 m³</span>
+                  </div>
+                  <div class="calc-kpi-item highlight">
+                    <span class="calc-kpi-title">Required CADR</span>
+                    <span class="calc-kpi-val color-green" id="res-required-cadr">168 CFM</span>
+                    <span class="calc-kpi-sub" id="res-required-m3h">285 m³/h</span>
+                  </div>
+                  <div class="calc-kpi-item">
+                    <span class="calc-kpi-title">Pull-Down Time</span>
+                    <span class="calc-kpi-val color-blue" id="res-pulldown-time">13 mins</span>
+                    <span class="calc-kpi-sub">to reach &lt;15 µg/m³</span>
+                  </div>
+                </div>
+
+                <div class="calc-comparison-banner">
+                  <div class="comparison-side">
+                    <span style="color: var(--text-secondary); font-size: 0.8rem;">Commercial HEPA Required:</span>
+                    <strong id="res-commercial-units" style="color: #f87171;">1 - 2 Units (~$380 - $550)</strong>
+                  </div>
+                  <div class="comparison-arrow">⚡ VS</div>
+                  <div class="comparison-side winner">
+                    <span style="color: #a7f3d0; font-size: 0.8rem;">DIY Corsi-Rosenthal Box:</span>
+                    <strong class="color-green font-bold">Only 1 Unit ($55) delivers 520 CFM!</strong>
+                    <span class="badge badge-success" id="res-savings-badge" style="margin-top: 0.25rem; font-size: 0.74rem;">Saves ~$400+ Upfront</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. MODULE: COMMUNITY DEFENSE GRID -->
+    <section id="pane-community" class="tab-pane" role="tabpanel" aria-labelledby="tab-community">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Neighborhood Clean-Air Defense Grid</h2>
+          <span class="badge badge-primary">Collective Action Hub</span>
+        </div>
+        <p class="text-secondary">
+          Air pollution is a shared public health challenge. When entire neighborhoods coordinate carpools, school drop-off zones, and stop open burning, local air quality improves for everyone.
+        </p>
+
+        <!-- Cumulative Community Impact Counters -->
+        <div class="community-impact-ribbon">
+          <div class="ribbon-box">
+            <span class="ribbon-num color-green" id="grid-co2-saved">182 kg</span>
+            <span class="ribbon-lbl">Daily CO₂ Emissions Averted</span>
+          </div>
+          <div class="ribbon-box">
+            <span class="ribbon-num color-purple" id="grid-pm25-prevented">756 g</span>
+            <span class="ribbon-lbl">Daily Tailpipe PM2.5 Prevented</span>
+          </div>
+          <div class="ribbon-box">
+            <span class="ribbon-num color-blue" id="grid-cars-off">66</span>
+            <span class="ribbon-lbl">Daily Solo Cars Removed</span>
+          </div>
+          <div class="ribbon-box">
+            <span class="ribbon-num color-gold" id="grid-residents">488</span>
+            <span class="ribbon-lbl">Active Neighborhood Residents</span>
+          </div>
+        </div>
+
+        <!-- Active Syndicates Grid -->
+        <h3 class="section-subtitle">Active Community Micro-Syndicates</h3>
+        <div id="syndicates-container" class="syndicates-grid">
+          <div class="loading-state">Loading active neighborhood syndicates...</div>
+        </div>
+
+        <!-- Community Pledges -->
+        <div class="pledges-section">
+          <h3 class="section-subtitle">Take the Clean-Air Community Pledge</h3>
+          <div id="pledges-container" class="pledges-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. MODULE: DIRECT IMPACT & SCIENCE -->
+    <section id="pane-impact" class="tab-pane" role="tabpanel" aria-labelledby="tab-impact">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Direct Impact & Scientific Explainability Studio</h2>
+          <span class="badge badge-purple">Mathematical Transparency</span>
+        </div>
+        <p class="text-secondary">
+          We clearly quantify how your daily choices directly protect your family respiratory organs and prevent emissions in your neighborhood.
+        </p>
+
+        <div class="impact-calculator-form">
+          <div class="form-row-3" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label for="impact-timeframe" class="form-label">Timeframe:</label>
+              <select id="impact-timeframe" class="form-select">
+                <option value="30" selected>1 Month (30 Days)</option>
+                <option value="90">Full Winter Smog Season (90 Days)</option>
+                <option value="365">1 Full Year (365 Days)</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label for="impact-commute-km" class="form-label">Daily Roundtrip Commute (km):</label>
+              <input type="number" id="impact-commute-km" value="24" min="0" max="200" class="form-input">
+            </div>
+            <div class="form-group" style="align-self: flex-end;">
+              <button type="button" id="btn-recalc-impact" class="btn btn-primary">Recalculate Impact</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="impact-cards-grid">
+          <div class="impact-kpi-card">
+            <div class="kpi-icon">🫁</div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-lung-dose">145.2 mg</span>
+              <span class="kpi-title">PM2.5 Spared from Household Lungs</span>
+              <p class="kpi-desc">Microscopic particulates prevented from crossing into the alveolar bloodstream.</p>
+            </div>
+          </div>
+
+          <div class="impact-kpi-card">
+            <div class="kpi-icon">🚭</div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-cigs-val">240</span>
+              <span class="kpi-title">Cigarette Equivalents Avoided</span>
+              <p class="kpi-desc">Based on Berkeley Earth formula (22 µg/m³ PM2.5 = 1 cig/day).</p>
+            </div>
+          </div>
+
+          <div class="impact-kpi-card">
+            <div class="kpi-icon">🌱</div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-co2-val">248 kg</span>
+              <span class="kpi-title">Community CO₂ Emissions Prevented</span>
+              <p class="kpi-desc">Equal to planting <span id="kpi-trees-val">12</span> urban trees.</p>
+            </div>
+          </div>
+
+          <div class="impact-kpi-card">
+            <div class="kpi-icon">📉</div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-risk-val">-58%</span>
+              <span class="kpi-title">Acute Respiratory Flare-Up Risk</span>
+              <p class="kpi-desc">Reduction in emergency bronchial constriction and asthma episodes.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scientific Methodology Citations -->
+        <div class="citations-box">
+          <h4>Scientific Formulas & Peer-Reviewed References</h4>
+          <div class="citation-item">
+            <strong>Lung Dose Inhaled Formula:</strong>
+            <code>Inhaled Dose (µg) = ∑ [ Cin(t) × RespirationRate(m³/h) × Δt × (1 - MaskEfficiency) ]</code>
+            <p>Respiration rates sourced from <em>US EPA Exposure Factors Handbook (2011) Table 6-1</em>.</p>
+          </div>
+          <div class="citation-item">
+            <strong>Diurnal Boundary Layer Inversion Dynamics:</strong>
+            <p>Planetary boundary layer height modeled after <em>Stull (1988) Boundary Layer Meteorology</em>.</p>
+          </div>
+          <div class="citation-item">
+            <strong>Epidemiological Health Risk:</strong>
+            <p>Risk coefficients synthesized from <em>WHO 2021 Global Air Quality Guidelines Systematic Review</em>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. MODULE: GENAI COPILOT -->
+    <section id="pane-copilot" class="tab-pane" role="tabpanel" aria-labelledby="tab-copilot">
+      <div class="chat-layout">
+        <!-- Agent Persona Selector Sidebar -->
+        <aside class="chat-sidebar">
+          <h3>Choose AI Specialist:</h3>
+          <div class="agent-radios" role="radiogroup" aria-label="Select Specialized AI Copilot Persona">
+            <label class="agent-label active">
+              <input type="radio" name="agentPersona" value="health" checked>
+              <div class="agent-avatar">🩺</div>
+              <div>
+                <strong>Dr. Aero</strong>
+                <p>Family Health & Vulnerability</p>
+              </div>
+            </label>
+
+            <label class="agent-label">
+              <input type="radio" name="agentPersona" value="routine">
+              <div class="agent-avatar">🗺️</div>
+              <div>
+                <strong>Aria Routine</strong>
+                <p>Eco-Commute & Heating Shifts</p>
+              </div>
+            </label>
+
+            <label class="agent-label">
+              <input type="radio" name="agentPersona" value="iaq">
+              <div class="agent-avatar">🔧</div>
+              <div>
+                <strong>Engineer Jack</strong>
+                <p>IAQ & DIY Filtration Physics</p>
+              </div>
+            </label>
+
+            <label class="agent-label">
+              <input type="radio" name="agentPersona" value="community">
+              <div class="agent-avatar">📣</div>
+              <div>
+                <strong>Maya Civic</strong>
+                <p>Community Action Organizer</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="quick-prompts">
+            <h4 style="margin-bottom: 0.6rem;">Explore Knowledge & Automations:</h4>
+            
+            <div class="quick-category-section">
+              <span class="quick-cat-title">🩺 Health & Vulnerabilities</span>
+              <div class="quick-buttons-row">
+                <button type="button" class="quick-btn" data-query="Can 8-month-old babies wear masks during severe smog? How should I protect my infant?">👶 Baby & Toddler Safety</button>
+                <button type="button" class="quick-btn" data-query="What should a pregnant woman do during this severe winter smog episode?">🤰 Pregnancy Protection</button>
+                <button type="button" class="quick-btn" data-query="How does cold winter smog trigger asthma bronchospasm and how should I warm my inhaler?">🫁 Asthma Emergency Plan</button>
+                <button type="button" class="quick-btn" data-query="Can dogs go for walks during severe winter smog? How do I protect pets?">🐾 Pet Outdoor Limits</button>
+              </div>
+            </div>
+
+            <div class="quick-category-section" style="margin-top: 0.6rem;">
+              <span class="quick-cat-title">🔧 DIY IAQ & Aerosol Physics</span>
+              <div class="quick-buttons-row">
+                <button type="button" class="quick-btn" data-query="Explain how to build a Corsi-Rosenthal box step by step with the 15-inch fan shroud hack.">📦 Corsi-Rosenthal Box</button>
+                <button type="button" class="quick-btn" data-query="Can spider plants or snake plants clean indoor air during severe smog? What did NASA study actually find?">🌿 Do Houseplants Work?</button>
+                <button type="button" class="quick-btn" data-query="How do I calculate CADR and room sizing for my home?">📐 CADR Sizing Formula</button>
+                <button type="button" class="quick-btn" data-query="How does kitchen negative pressure isolate cooking frying smoke?">🍳 Cooking Frying Draft</button>
+              </div>
+            </div>
+
+            <div class="quick-category-section" style="margin-top: 0.6rem;">
+              <span class="quick-cat-title">🗺️ Low-Emission Living & Inversion</span>
+              <div class="quick-buttons-row">
+                <button type="button" class="quick-btn" data-query="What is a winter thermal inversion and why does it trap urban pollution?">🌌 Thermal Inversion Trap</button>
+                <button type="button" class="quick-btn" data-query="What is the 13:00 to 15:30 Golden Ventilation Window and why is it safe?">☀️ Golden Window Airing</button>
+                <button type="button" class="quick-btn" data-query="How does car AC internal recirculation reduce commute particulate exposure by 80%?">🚗 Car AC Recirculation</button>
+                <button type="button" class="quick-btn" data-query="Why are inverter heat pumps better than wood or kerosene heaters for winter smog?">🔥 Clean Heat Pump Shift</button>
+              </div>
+            </div>
+
+            <div class="quick-category-section" style="margin-top: 0.6rem;">
+              <span class="quick-cat-title">⚡ AI Task Automation & Bookings</span>
+              <div class="quick-buttons-row">
+                <button type="button" class="quick-btn" data-query="Book a shared community HEPA purifier for 5 days starting Friday for my family.">📦 Book Purifier Unit</button>
+                <button type="button" class="quick-btn" data-query="Schedule a 4-person carpool pickup every weekday morning at 8:15 AM along MG Road.">🚗 Schedule Carpool</button>
+                <button type="button" class="quick-btn" data-query="How does AeroShield export Home Assistant YAML and Google Home automations?">🔌 IoT Home Assistant</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Conversational Chat Area -->
+        <div class="chat-main card">
+          <div class="chat-header">
+            <div>
+              <h3 id="current-agent-name">Dr. Aero</h3>
+              <p id="current-agent-title" class="text-secondary" style="margin-bottom: 0;">Family Health & Vulnerability Specialist</p>
+            </div>
+            <span class="badge badge-success" id="ai-status-indicator">Autonomous AI Engine Ready</span>
+          </div>
+
+          <div id="chat-messages" class="chat-messages" role="log" aria-live="polite">
+            <div class="chat-msg msg-ai">
+              <div class="msg-avatar">🩺</div>
+              <div class="msg-body">
+                <strong>Dr. Aero</strong>
+                <p>Welcome! I'm Dr. Aero, your family clean-air and pulmonary health copilot. Current outdoor smog is severe. Ask me anything about protecting your children, elderly relatives, managing asthma, indoor DIY hacks, or setting up automated community tasks!</p>
+              </div>
+            </div>
+          </div>
+
+          <form id="chat-form" class="chat-input-row">
+            <label for="chat-input" class="sr-only">Type message to AeroShield Copilot</label>
+            <input type="text" id="chat-input" placeholder="Ask about indoor hacks, low-emission routines, health protection, or tasks..." class="chat-input" autocomplete="off" required>
+            <button type="submit" class="btn btn-primary" id="btn-chat-send" aria-label="Send Message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span>Send</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. MODULE: AI TASK & EVENT BOOKING AUTOMATION HUB (NEW & POWERFUL) -->
+    <section id="pane-task-automation" class="tab-pane" role="tabpanel" aria-labelledby="tab-task-automation">
+      <div class="automation-hub-grid">
+        <!-- Task Creation Studio -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">AI Task & Event Booking Automation Studio</h2>
+            <span class="badge badge-purple">Autonomous Agent Execution</span>
+          </div>
+          <p class="text-secondary">
+            Input ANY client task, equipment booking, community event, or automated alert rule in natural language. AeroShield's AI parses intent, reserves resources, creates schedules, and automates dispatch!
+          </p>
+
+          <form id="task-automation-form" class="sim-form">
+            <div class="form-group">
+              <label for="client-task-prompt" class="form-label">Client Task or Booking Request (Natural Language):</label>
+              <textarea id="client-task-prompt" rows="3" class="form-input" placeholder="e.g. 'Book a shared community HEPA purifier for 5 days starting this Friday for my asthmatic mother' or 'Schedule a 4-person carpool pickup every morning at 8:15 AM'..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="client-name" class="form-label">Client / Household Name:</label>
+              <input type="text" id="client-name" class="form-input" value="Hemalatha Family (Sector 14)" required>
+            </div>
+
+            <div class="quick-prompts" style="margin: 0.5rem 0;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">One-Click Quick Templates:</span>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                <button type="button" class="quick-btn task-template-btn" data-template="Book a shared high-CADR air purifier for 4 days for our newborn nursery">📦 Book Purifier</button>
+                <button type="button" class="quick-btn task-template-btn" data-template="Schedule a weekday morning carpool pickup for 3 people along MG Road corridor">🚗 Book Carpool</button>
+                <button type="button" class="quick-btn task-template-btn" data-template="Dispatch an automated SMS red alert to 150 apartment residents when AQI crosses 300">🚨 Setup Emergency Alert</button>
+                <button type="button" class="quick-btn task-template-btn" data-template="Schedule an Idle-Free Volunteer shift at St. Mary's School on Wednesday morning">🏫 School Zone Event</button>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-submit-task" class="btn btn-primary btn-block">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Automate & Dispatch Task
+            </button>
+          </form>
+        </div>
+
+        <!-- Active Tasks & Bookings Feed -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Live Automated Tasks & Bookings Registry</h2>
+            <span class="badge badge-success" id="active-tasks-count">4 Tasks Active</span>
+          </div>
+          <p class="text-secondary">
+            Monitor real-time execution status of AI scheduled events, trigger immediate runs, or export synchronized calendar invites (.ics).
+          </p>
+
+          <div id="tasks-feed" class="tasks-list">
+            <div class="loading-state">Loading active automated tasks...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. MODULE: IOT AUTOMATION STUDIO -->
+    <section id="pane-automation" class="tab-pane" role="tabpanel" aria-labelledby="tab-automation">
+      <div class="grid-2col">
+        <!-- Autonomous Alerts Evaluator -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Autonomous Smog Trigger Engine</h2>
+            <span class="badge badge-gold">Auto-Trigger Active</span>
+          </div>
+          <p class="text-secondary">
+            AeroShield continuously monitors meteorological boundary layer compression and pollutant thresholds, auto-generating smart home commands and emergency warnings.
+          </p>
+
+          <div class="automation-action-box">
+            <button type="button" id="btn-eval-automation" class="btn btn-secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Simulate Trigger Evaluation
+            </button>
+          </div>
+
+          <div id="automation-results" class="automation-feed" style="margin-top: 1rem;">
+            <div class="loading-state">Evaluating autonomous triggers...</div>
+          </div>
+        </div>
+
+        <!-- Export IoT Configs -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Smart Home IoT Exporter</h2>
+            <span class="badge badge-info">Home Assistant / IFTTT / Google</span>
+          </div>
+          <p class="text-secondary">
+            Download pre-configured automations to synchronize your smart plugs, HVAC dampers, and smart speakers with diurnal winter smog cycles.
+          </p>
+
+          <div class="export-buttons-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" id="btn-download-ha" class="btn btn-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Home Assistant YAML
+            </button>
+            <button type="button" id="btn-view-ifttt" class="btn btn-secondary">View IFTTT Recipe</button>
+            <button type="button" id="btn-view-google" class="btn btn-secondary">View Google Home Routine</button>
+          </div>
+
+          <div class="code-preview-box" style="margin-top: 1.25rem;">
+            <pre><code id="iot-code-snippet"># Home Assistant YAML ready for export...</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <strong>AeroShield AI 2.0</strong> — Autonomous Winter Smog & Community Air Resilience
+        <p>Built for Google Prompt Wars. Powered by GenAI, Aerosol Physics & Autonomous Task Automation.</p>
+      </div>
+
+      <div class="footer-badges">
+        <span class="cert-badge" title="Accessible to WCAG 2.1 AA Standards">♿ WCAG 2.1 AA</span>
+        <span class="cert-badge" title="Based on WHO 2021 Air Quality Guidelines">🌐 WHO Guidelines</span>
+        <span class="cert-badge" title="EPA NAAQS Standards Verified">🔬 EPA NAAQS</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

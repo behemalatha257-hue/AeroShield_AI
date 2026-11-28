@@ -22,7 +22,11 @@ const {
   validateIAQSimulation,
   validateRoutineRequest,
   validateImpactRequest,
-  validateChatRequest
+  validateChatRequest,
+  validateCommunityJoin,
+  validateCommunityPledge,
+  validateTaskCreate,
+  validateTaskExecute
 } = require('../middleware/validator');
 
 /**
@@ -128,11 +132,8 @@ router.get('/community/grid', apiLimiter, (req, res) => {
  * POST /api/community/join
  * Join an active neighborhood syndicate
  */
-router.post('/community/join', apiLimiter, (req, res) => {
+router.post('/community/join', apiLimiter, validateCommunityJoin, (req, res) => {
   const { syndicateId, userDetails } = req.body || {};
-  if (!syndicateId) {
-    return res.status(400).json({ error: 'Validation Error', message: 'syndicateId is required.' });
-  }
   const result = communityService.joinSyndicate(syndicateId, userDetails);
   res.json(result);
 });
@@ -141,11 +142,8 @@ router.post('/community/join', apiLimiter, (req, res) => {
  * POST /api/community/pledge
  * Sign a community clean air pledge
  */
-router.post('/community/pledge', apiLimiter, (req, res) => {
+router.post('/community/pledge', apiLimiter, validateCommunityPledge, (req, res) => {
   const { pledgeId } = req.body || {};
-  if (!pledgeId) {
-    return res.status(400).json({ error: 'Validation Error', message: 'pledgeId is required.' });
-  }
   const result = communityService.signPledge(Number(pledgeId));
   res.json(result);
 });
@@ -185,11 +183,8 @@ router.post('/automation/evaluate', apiLimiter, (req, res) => {
  * POST /api/automation/tasks/create
  * AI-powered automated task and booking creation
  */
-router.post('/automation/tasks/create', apiLimiter, (req, res) => {
+router.post('/automation/tasks/create', apiLimiter, validateTaskCreate, (req, res) => {
   const { clientTaskPrompt, clientName, category } = req.body || {};
-  if (!clientTaskPrompt || typeof clientTaskPrompt !== 'string' || clientTaskPrompt.trim().length === 0) {
-    return res.status(400).json({ error: 'Validation Error', message: 'clientTaskPrompt is required.' });
-  }
   const task = automationService.createAutomatedTask({ clientTaskPrompt, clientName, category });
   res.json({ success: true, task });
 });
@@ -207,11 +202,8 @@ router.get('/automation/tasks/list', apiLimiter, (req, res) => {
  * POST /api/automation/tasks/execute
  * Manually trigger or execute an automated task
  */
-router.post('/automation/tasks/execute', apiLimiter, (req, res) => {
+router.post('/automation/tasks/execute', apiLimiter, validateTaskExecute, (req, res) => {
   const { taskId } = req.body || {};
-  if (!taskId) {
-    return res.status(400).json({ error: 'Validation Error', message: 'taskId is required.' });
-  }
   const result = automationService.executeTask(taskId);
   res.json(result);
 });

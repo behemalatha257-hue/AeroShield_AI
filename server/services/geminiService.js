@@ -85,9 +85,13 @@ User Inquiry:
 Provide an empathetic, beautifully structured, highly actionable response:`;
 
       for (const modelName of this.activeModels) {
+        let timeoutId = null;
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          timeoutId = setTimeout(() => controller.abort(), 8000);
+          if (timeoutId && typeof timeoutId.unref === 'function') {
+            timeoutId.unref();
+          }
 
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`;
           const res = await fetch(url, {
@@ -104,7 +108,6 @@ Provide an empathetic, beautifully structured, highly actionable response:`;
             }),
             signal: controller.signal
           });
-          clearTimeout(timeoutId);
 
           if (res.ok) {
             const data = await res.json();
@@ -116,6 +119,10 @@ Provide an empathetic, beautifully structured, highly actionable response:`;
           }
         } catch (err) {
           // Model fallback will proceed to next candidate or autonomous engine
+        } finally {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
         }
       }
     }

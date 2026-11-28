@@ -30,4 +30,52 @@ describe('HTTP API Endpoints Integration', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.response).toBeDefined();
   });
+
+  test('GET /api/inversion/forecast returns meteorological profile', async () => {
+    const res = await request(app).get('/api/inversion/forecast?city=Delhi-NCR');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.forecast).toBeInstanceOf(Array);
+    expect(res.body.forecast.length).toBe(24);
+  });
+
+  test('POST /api/community/join validates and accepts syndicate membership', async () => {
+    const res = await request(app)
+      .post('/api/community/join')
+      .send({ syndicateId: 'carpool-syndicate-north' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
+
+  test('POST /api/community/pledge accepts valid pledge', async () => {
+    const res = await request(app)
+      .post('/api/community/pledge')
+      .send({ pledgeId: 1 });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
+
+  test('POST /api/automation/tasks/create creates automated environmental task', async () => {
+    const res = await request(app)
+      .post('/api/automation/tasks/create')
+      .send({ clientTaskPrompt: 'Schedule e-carpool for 4 commuters on Monday at 8 AM', clientName: 'Dev Client' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.task).toBeDefined();
+  });
+
+  test('rejects invalid simulation payloads with 400 Bad Request', async () => {
+    const res = await request(app)
+      .post('/api/iaq/simulate')
+      .send({ roomVolumeM3: -50 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('Validation Error');
+  });
+
+  test('rejects empty chat messages with 400 Bad Request', async () => {
+    const res = await request(app)
+      .post('/api/assistant/chat')
+      .send({ message: '   ' });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('Validation Error');
+  });
 });

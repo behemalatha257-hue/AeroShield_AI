@@ -80,6 +80,12 @@ class AutomationService {
 
   /**
    * AI-Powered Task & Event Booking Parser
+   * Converts free-form client prompts into structured environmental action tasks, bookings, and schedules.
+   * @param {Object} options - Task creation options
+   * @param {string} options.clientTaskPrompt - Free-form prompt from user/client
+   * @param {string} [options.clientName='Resident Client'] - Name of the client
+   * @param {string} [options.category='GENERAL_TASK'] - Default category fallback
+   * @returns {Object} Structured automated task record with actions, schedule, and metadata
    */
   createAutomatedTask({ clientTaskPrompt, clientName = 'Resident Client', category = 'GENERAL_TASK' }) {
     const p = (clientTaskPrompt || '').toLowerCase();

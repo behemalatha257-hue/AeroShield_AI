@@ -116,9 +116,76 @@ const validateChatRequest = (req, res, next) => {
   next();
 };
 
+const validateCommunityJoin = (req, res, next) => {
+  const { syndicateId } = req.body || {};
+  if (!syndicateId || typeof syndicateId !== 'string' || syndicateId.trim().length === 0) {
+    return res.status(400).json({
+      status: 400,
+      error: 'Validation Error',
+      message: 'A valid string syndicateId is required.'
+    });
+  }
+  next();
+};
+
+const validateCommunityPledge = (req, res, next) => {
+  const { pledgeId } = req.body || {};
+  const num = Number(pledgeId);
+  if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+    return res.status(400).json({
+      status: 400,
+      error: 'Validation Error',
+      message: 'A valid positive integer pledgeId is required.'
+    });
+  }
+  next();
+};
+
+const validateTaskCreate = (req, res, next) => {
+  const { clientTaskPrompt, clientName } = req.body || {};
+  if (!clientTaskPrompt || typeof clientTaskPrompt !== 'string' || clientTaskPrompt.trim().length === 0) {
+    return res.status(400).json({
+      status: 400,
+      error: 'Validation Error',
+      message: 'A non-empty string clientTaskPrompt is required.'
+    });
+  }
+  if (clientTaskPrompt.length > 2000) {
+    return res.status(400).json({
+      status: 400,
+      error: 'Validation Error',
+      message: 'clientTaskPrompt exceeds maximum limit of 2000 characters.'
+    });
+  }
+  if (clientName && (typeof clientName !== 'string' || clientName.length > 100)) {
+    return res.status(400).json({
+      status: 400,
+      error: 'Validation Error',
+      message: 'clientName must be a string under 100 characters.'
+    });
+  }
+  next();
+};
+
+const validateTaskExecute = (req, res, next) => {
+  const { taskId } = req.body || {};
+  if (!taskId || typeof taskId !== 'string' || taskId.trim().length === 0) {
+    return res.status(400).json({
+      status: 400,
+      error: 'Validation Error',
+      message: 'A valid string taskId is required.'
+    });
+  }
+  next();
+};
+
 module.exports = {
   validateIAQSimulation,
   validateRoutineRequest,
   validateImpactRequest,
-  validateChatRequest
+  validateChatRequest,
+  validateCommunityJoin,
+  validateCommunityPledge,
+  validateTaskCreate,
+  validateTaskExecute
 };

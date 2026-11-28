@@ -19,4 +19,12 @@ describe('Security & Sanitization', () => {
     const clean = sanitizeInput(payload);
     expect(clean.details.bio).toBe('Hello World');
   });
+
+  test('neutralizes prototype pollution keys and null bytes', () => {
+    const maliciousPayload = JSON.parse('{"__proto__":{"polluted":true},"user":"Safe\\u0000User"}');
+    const sanitized = sanitizeInput(maliciousPayload);
+    expect(Object.prototype.polluted).toBeUndefined();
+    expect(sanitized.polluted).toBeUndefined();
+    expect(sanitized.user).toBe('SafeUser');
+  });
 });
